@@ -1,0 +1,63 @@
+{
+   "abstract" : "manage per-service rate limitations",
+   "author" : [
+      "Binary.com <perl@binary.com>"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "Dist::Zilla version 5.041, Dist::Milla version v1.0.15, CPAN::Meta::Converter version 2.143240",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : 2
+   },
+   "name" : "RateLimitations",
+   "no_index" : {
+      "directory" : [
+         "eg",
+         "examples",
+         "inc",
+         "share",
+         "t",
+         "xt"
+      ]
+   },
+   "prereqs" : {
+      "configure" : {
+         "requires" : {
+            "Module::Build::Tiny" : "0.039"
+         }
+      },
+      "develop" : {
+         "requires" : {
+            "Dist::Milla" : "v1.0.15",
+            "Test::Pod" : "1.41"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Cache::RedisDB" : "0.07",
+            "File::ShareDir" : "1.102",
+            "Time::Duration::Concise" : "1.3",
+            "YAML::CacheLoader" : "0.018",
+            "perl" : "5.0010000"
+         }
+      },
+      "test" : {
+         "recommends" : {
+            "Test::RedisServer" : "0.14"
+         },
+         "requires" : {
+            "Test::FailWarnings" : "0.008",
+            "Test::Most" : "0.34"
+         }
+      }
+   },
+   "release_status" : "stable",
+   "version" : "0.01",
+   "x_contributors" : [
+      "Matt Miller <matt@binary.com>"
+   ]
+}
+

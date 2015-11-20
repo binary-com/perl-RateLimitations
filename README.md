@@ -4,20 +4,52 @@ RateLimitations - manage per-service rate limitations
 
 # SYNOPSIS
 
-    use RateLimitations qw(within_rate_limits);
+    use 5.010;
 
-    if (within_rate_limits({service => 'my_service', 'consumer' => 'consumer_id'}) {
-       # consumer_id has not violated the rate limits for my_service on this server
-       provide_service();
+    use RateLimitations qw(
+        rate_limited_services
+        rate_limits_for_service
+        within_rate_limits
+        all_service_consumers
+    );
+
+    # Example using the built-in default "rl_internal_testing" service:
+    #   rl_internal_testing:
+    #       10s: 2
+    #       5m:  6
+
+    my @rl_services = rate_limited_services();
+    # ("rl_internal_testing")
+
+    my @test_limits = rate_limits_for_service('rl_internal_testing');
+    # ([10 => 2], [300 => 6])
+
+    foreach my $i (1 .. 6) {
+        my $guy = ($i % 2) ? 'OddGuy' : 'EvenGuy';
+        my $result = (
+            within_rate_limits({
+                    service  => 'rl_internal_testing',
+                    consumer => $guy,
+                })) ? 'permitted' : 'denied';
+        say $result . ' for ' . $guy;
     }
+    # permitted for OddGuy
+    # permitted for EvenGuy
+    # permitted for OddGuy
+    # permitted for EvenGuy
+    # denied for OddGuy
+    # denied for EvenGuy
+
+    my $consumers = all_service_consumers();
+    # { rl_internal_testing => ['EvenGuy', 'OddGuy']}
 
 # DESCRIPTION
 
 RateLimitations is a module to help enforce per-service rate limits.
 
-The rate limits are checked via a backing Redis store.  Its persistence allows for
+The rate limits are checked via a backing Redis store.  This persistence allows for
 multiple processes to maintain a shared view of resource usage.  Acceptable rates
-are defined in the `share/rate_limits.yml` file.
+are defined in the `/etc/perl_rate_limitations.yml` file.
 
 Several utility functions are provided to help examine the inner state to help confirm
 proper operation.
@@ -34,19 +66,19 @@ Nothing is exported from this package by default.
 
     Will croak unless both elements are supplied and `$service` is valid.
 
-    Note that this call will update the known request rate, even if it eventually
-    determines that the request is not within limits.  This is a conservative approach
+    Note that this call will update the known request rate, even if it is eventually
+    determined that the request is not within limits.  This is a conservative approach
     since we cannot know for certain how the results of this call are used. As such,
     it is best to use this call **only** when legitimately gating service access and
     to allow a bit of extra slack in the permitted limits.
 
-- verify\_rate\_limits\_file()
+- verify\_rate\_limitations\_config()
 
-    Attempts to load the `share/rate_limits.yml` file and confirm that its contents make
-    sense.  It parses the file in much the same way as importing the module, with additional
-    sanity checks on the supplied rates.
+    Attempts to load the `/etc/perl_rate_limitations.yml` file and confirm that its
+    contents make sense.  Parsing the file in much the same way as importing the
+    module, additional sanity checks are performed on the supplied rates.
 
-    Returns **1** if the file apears to be ok; **0** otherwise.
+    Returns **1** if the file appears to be OK; **0** otherwise.
 
 - rate\_limited\_services()
 
@@ -71,6 +103,26 @@ Nothing is exported from this package by default.
 - flush\_all\_service\_consumers()
 
     Clears the full list of consumers.  Returns the number of items cleared.
+
+# CONFIG FILE FORMAT
+
+The services to be limited are defined in the `/etc/perl_rate_limitations.yml`
+file.  This file should be laid out as follows:
+
+    service_name:
+        time: count
+        time: count
+    service_name:
+        time: count
+        time: count
+
+**service\_name** is an arbitrary string to uniquely identify the service
+
+**time** is a string which can be interpreted by **Time::Duration::Concise**. This
+may include using an integer number of seconds.
+
+**count** is an integer which sets the maximum permitted **service\_name** accesses
+per **time**
 
 # AUTHOR
 

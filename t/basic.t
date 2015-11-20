@@ -3,7 +3,7 @@ use Test::Most;
 use Test::MockTime qw(set_relative_time restore_time);
 use Test::FailWarnings;
 use RateLimitations
-    qw(rate_limits_for_service within_rate_limits verify_rate_limits_file rate_limited_services all_service_consumers flush_all_service_consumers);
+    qw(rate_limits_for_service within_rate_limits verify_rate_limitations_config rate_limited_services all_service_consumers flush_all_service_consumers);
 
 my $redis_server;
 my $prev_redis = $ENV{REDIS_CACHE_SERVER};
@@ -14,11 +14,11 @@ eval {
     $ENV{REDIS_CACHE_SERVER} = $redis_server->connect_info;
 };
 
-subtest 'verify_rate_limits_file' => sub {
-    ok(verify_rate_limits_file(), 'Included rate_limits.yml file is ok');
+subtest 'verify_rate_limitations_config' => sub {
+    ok(verify_rate_limitations_config(), 'Included rate limitations are ok');
 };
 
-my ($service, $consumer) = ('testing', 'CR001');
+my ($service, $consumer) = ('rl_internal_testing', 'CR001');
 my $consume = {
     service  => $service,
     consumer => $consumer,

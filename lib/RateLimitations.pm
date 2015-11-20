@@ -7,10 +7,10 @@ our $VERSION = '0.01';
 use Carp;
 
 use Cache::RedisDB;
+use Config::Onion;
 use File::ShareDir qw(dist_file);
 use List::Util qw(all);
 use Time::Duration::Concise;
-use YAML::CacheLoader qw(LoadFile);
 
 use base qw( Exporter );
 our @EXPORT_OK = qw(
@@ -18,7 +18,7 @@ our @EXPORT_OK = qw(
     flush_all_service_consumers
     rate_limited_services
     rate_limits_for_service
-    verify_rate_limits_file
+    verify_rate_limitations_config
     within_rate_limits
 );
 use constant KEYSPACE  => 'RATELIMITATIONS';    # Everything will fall under this
@@ -28,7 +28,14 @@ my $rates_file_content;
 my %limits;
 
 BEGIN {
-    $rates_file_content = LoadFile(dist_file('RateLimitations', 'rate_limits.yml'));
+    my $cfg = Config::Onion->new;
+    $cfg->set_default(
+        rl_internal_testing => {
+            '10s' => 2,
+            '5m'  => 6
+        });
+    $cfg->load('/etc/perl_rate_limitations', '/etc/rmg/perl_rate_limitations');
+    $rates_file_content = $cfg->get;
     foreach my $svc (sort keys %$rates_file_content) {
         my @service_limits;
         foreach my $time (keys $rates_file_content->{$svc}) {
@@ -45,7 +52,7 @@ BEGIN {
     }
 }
 
-sub verify_rate_limits_file {
+sub verify_rate_limitations_config {
     my $proper = 1;    # Assume it is proper until we find a bad entry
     foreach my $svc (sort keys %$rates_file_content) {
         my @service_limits;
@@ -157,20 +164,52 @@ RateLimitations - manage per-service rate limitations
 
 =head1 SYNOPSIS
 
- use RateLimitations qw(within_rate_limits);
+    use 5.010;
 
- if (within_rate_limits({service => 'my_service', 'consumer' => 'consumer_id'}) {
-    # consumer_id has not violated the rate limits for my_service on this server
-    provide_service();
- }
+    use RateLimitations qw(
+        rate_limited_services
+        rate_limits_for_service
+        within_rate_limits
+        all_service_consumers
+    );
+
+    # Example using the built-in default "rl_internal_testing" service:
+    #   rl_internal_testing:
+    #       10s: 2
+    #       5m:  6
+
+    my @rl_services = rate_limited_services();
+    # ("rl_internal_testing")
+
+    my @test_limits = rate_limits_for_service('rl_internal_testing');
+    # ([10 => 2], [300 => 6])
+
+    foreach my $i (1 .. 6) {
+        my $guy = ($i % 2) ? 'OddGuy' : 'EvenGuy';
+        my $result = (
+            within_rate_limits({
+                    service  => 'rl_internal_testing',
+                    consumer => $guy,
+                })) ? 'permitted' : 'denied';
+        say $result . ' for ' . $guy;
+    }
+    # permitted for OddGuy
+    # permitted for EvenGuy
+    # permitted for OddGuy
+    # permitted for EvenGuy
+    # denied for OddGuy
+    # denied for EvenGuy
+
+    my $consumers = all_service_consumers();
+    # { rl_internal_testing => ['EvenGuy', 'OddGuy']}
 
 =head1 DESCRIPTION
 
 RateLimitations is a module to help enforce per-service rate limits.
 
-The rate limits are checked via a backing Redis store.  Its persistence allows for
+The rate limits are checked via a backing Redis store.  This persistence allows for
 multiple processes to maintain a shared view of resource usage.  Acceptable rates
-are defined in the F<share/rate_limits.yml> file.
+are defined in the F</etc/perl_rate_limitations.yml> file.
 
 Several utility functions are provided to help examine the inner state to help confirm
 proper operation.
@@ -189,19 +228,19 @@ access would exceed those limits.
 
 Will croak unless both elements are supplied and C<$service> is valid.
 
-Note that this call will update the known request rate, even if it eventually
-determines that the request is not within limits.  This is a conservative approach
+Note that this call will update the known request rate, even if it is eventually
+determined that the request is not within limits.  This is a conservative approach
 since we cannot know for certain how the results of this call are used. As such,
 it is best to use this call B<only> when legitimately gating service access and
 to allow a bit of extra slack in the permitted limits.
 
-=item verify_rate_limits_file()
+=item verify_rate_limitations_config()
 
-Attempts to load the F<share/rate_limits.yml> file and confirm that its contents make
-sense.  It parses the file in much the same way as importing the module, with additional
-sanity checks on the supplied rates.
+Attempts to load the F</etc/perl_rate_limitations.yml> file and confirm that its
+contents make sense.  Parsing the file in much the same way as importing the
+module, additional sanity checks are performed on the supplied rates.
 
-Returns B<1> if the file apears to be ok; B<0> otherwise.
+Returns B<1> if the file appears to be OK; B<0> otherwise.
 
 =item rate_limited_services()
 
@@ -228,6 +267,26 @@ for verifying consumer names are well-formed.
 Clears the full list of consumers.  Returns the number of items cleared.
 
 =back
+
+=head1 CONFIG FILE FORMAT
+
+The services to be limited are defined in the F</etc/perl_rate_limitations.yml>
+file.  This file should be laid out as follows:
+
+    service_name:
+        time: count
+        time: count
+    service_name:
+        time: count
+        time: count
+
+B<service_name> is an arbitrary string to uniquely identify the service
+
+B<time> is a string which can be interpreted by B<Time::Duration::Concise>. This
+may include using an integer number of seconds.
+
+B<count> is an integer which sets the maximum permitted B<service_name> accesses
+per B<time>
 
 =head1 AUTHOR
 

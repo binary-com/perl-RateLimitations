@@ -55,6 +55,17 @@
       }
    },
    "release_status" : "stable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/binary-com/perl-RateLimitations/issues"
+      },
+      "homepage" : "https://github.com/binary-com/perl-RateLimitations",
+      "repository" : {
+         "type" : "git",
+         "url" : "https://github.com/binary-com/perl-RateLimitations.git",
+         "web" : "https://github.com/binary-com/perl-RateLimitations"
+      }
+   },
    "version" : "0.01",
    "x_contributors" : [
       "Matt Miller <matt@binary.com>"

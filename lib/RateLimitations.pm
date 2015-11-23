@@ -8,7 +8,6 @@ use Carp;
 
 use Cache::RedisDB;
 use Config::Onion;
-use File::ShareDir qw(dist_file);
 use List::Util qw(all);
 use Time::Duration::Concise;
 

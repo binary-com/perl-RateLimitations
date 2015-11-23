@@ -39,9 +39,8 @@
          "requires" : {
             "Cache::RedisDB" : "0.07",
             "Config::Onion" : "1.004",
-            "File::ShareDir" : "1.102",
             "Time::Duration::Concise" : "1.3",
-            "perl" : "5.0010000"
+            "perl" : "v5.10.0"
          }
       },
       "test" : {

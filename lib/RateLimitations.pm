@@ -37,7 +37,7 @@ BEGIN {
     $rates_file_content = $cfg->get;
     foreach my $svc (sort keys %$rates_file_content) {
         my @service_limits;
-        foreach my $time (keys $rates_file_content->{$svc}) {
+        foreach my $time (keys %{$rates_file_content->{$svc}}) {
             my $ti = Time::Duration::Concise->new(interval => $time);
             my $count = $rates_file_content->{$svc}->{$time};
             push @service_limits, [$ti->seconds, $count];

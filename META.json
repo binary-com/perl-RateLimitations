@@ -49,6 +49,7 @@
          },
          "requires" : {
             "Test::FailWarnings" : "0.008",
+            "Test::MockTime" : "0.13",
             "Test::Most" : "0.34"
          }
       }

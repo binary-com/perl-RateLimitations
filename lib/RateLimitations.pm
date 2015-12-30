@@ -55,7 +55,7 @@ sub verify_rate_limitations_config {
     my $proper = 1;    # Assume it is proper until we find a bad entry
     foreach my $svc (sort keys %$rates_file_content) {
         my @service_limits;
-        foreach my $time (keys $rates_file_content->{$svc}) {
+        foreach my $time (keys %{$rates_file_content->{$svc}}) {
             my $ti = Time::Duration::Concise->new(interval => $time);
             my $count = $rates_file_content->{$svc}->{$time};
             push @service_limits, [$ti->seconds, $count, $count / $ti->seconds, undef, $time];

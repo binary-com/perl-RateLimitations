@@ -69,9 +69,9 @@ sub verify_rate_limitations_config {
                 my $that_limit = $service_limits[$index];
                 # This one is improper if that longer period has the same or smaller count
                 $improper = 'count should be lower than ' . $that_limit->[4] . ' count' if ($that_limit->[1] <= $this_limit->[1]);
-                # That one is improper if this shorter period has the same or smaller rate
+                # That one is improper if this shorter period has the smaller rate
                 $service_limits[$index]->[3] = 'rate should be lower than ' . $this_limit->[4] . ' rate'
-                    if (not $improper and $this_limit->[2] <= $that_limit->[2]);
+                    if (not $improper and $this_limit->[2] < $that_limit->[2]);
                 $index--;
             }
             if ($improper) {

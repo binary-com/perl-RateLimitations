@@ -2,6 +2,12 @@ Revision history for RateLimitations
 
 {{$NEXT}}
 
+0.04  2016-05-25 13:50:21 EST
+        - Possible breaking compability: verify_rate_limitations_config() check allows now the rate
+          to be the same for smaller and bigger periods for a service.
+          No need to change configs, they remain valid.
+        - Increment version to proper reflect fix of another 'keys on reference' error made Wed Dec 30 09:56:16 2015
+
 0.03  2015-11-23 17:43:58 EST
         - Fix "keys on reference" error; thanks to Slaven Rezić for the report
 

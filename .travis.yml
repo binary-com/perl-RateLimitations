@@ -20,4 +20,4 @@ before_install:
     - cpanm -qn Test::Requires::Git
     - cpanm -qn Devel::Cover::Report::Codecov
 script:
-    perl Build.PL && ./Build build && ./Build testcover && cover -report codecov
+    perl Build.PL && ./Build build && ./Build test && cover -test -report codecov

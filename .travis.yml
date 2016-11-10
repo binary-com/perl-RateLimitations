@@ -17,5 +17,7 @@ before_install:
     - build-perl
     - perl -V
     - cpanm -n --installdeps .
+    - cpanm -qn Test::Requires::Git
+    - cpanm -qn Devel::Cover::Report::Codecov
 script:
-    perl Build.PL && ./Build build && ./Build test
+    perl Build.PL && ./Build build && ./Build testcover && cover -report codecov

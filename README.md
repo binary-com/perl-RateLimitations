@@ -1,5 +1,8 @@
 # NAME
 
+[![Build Status](https://travis-ci.org/binary-com/perl-RateLimitations.svg?branch=master)](https://travis-ci.org/binary-com/perl-RateLimitations)
+[![codecov](https://codecov.io/gh/binary-com/perl-RateLimitations/branch/master/graph/badge.svg)](https://codecov.io/gh/binary-com/perl-RateLimitations)
+
 RateLimitations - manage per-service rate limitations
 
 # SYNOPSIS

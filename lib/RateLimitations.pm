@@ -62,7 +62,6 @@ sub verify_rate_limitations_config {
         }
         @service_limits = sort { $a->[0] <=> $b->[0] } @service_limits;
 
-        my @final_limits;
         while (my $this_limit = shift @service_limits) {
             my ($improper, $index) = ($this_limit->[3], $#service_limits);
             while (not $improper and $index > -1) {
